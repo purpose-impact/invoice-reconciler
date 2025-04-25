@@ -1,24 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-export default function Login() {
-  const [apiKey, setApiKey] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [error, setError] = useState('');
+interface LoginProps {
+  onLoginSuccess: () => void;
+}
 
-  useEffect(() => {
-    // Check if we have a stored API key
-    const storedKey = localStorage.getItem('apiKey');
-    console.log('storedKey', storedKey);
-    if (storedKey) {
-      setIsLoggedIn(true);
-    }
-  }, []);
+export default function Login({ onLoginSuccess }: LoginProps) {
+  const [apiKey, setApiKey] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +31,13 @@ export default function Login() {
 
       if (data.keyStatus === 'valid') {
         localStorage.setItem('apiKey', apiKey);
-        setIsLoggedIn(true);
+        if (data.project_id) {
+          localStorage.setItem('project_id', data.project_id);
+        }
+        if (data.organization_id) {
+          localStorage.setItem('organization_id', data.organization_id);
+        }
+        onLoginSuccess();
       } else {
         setError('Invalid API key');
       }
@@ -45,33 +45,6 @@ export default function Login() {
       setError('Error validating API key');
     }
   };
-
-  if (isLoggedIn) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="w-[350px]">
-          <CardHeader>
-            <CardTitle>Logged In</CardTitle>
-            <CardDescription>
-              Your API key is stored and ready to use
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={() => {
-                localStorage.removeItem('apiKey');
-                setIsLoggedIn(false);
-              }}
-            >
-              Logout
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

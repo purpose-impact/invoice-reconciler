@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const response = await fetch('https://api.cloud.llamaindex.ai/api/v1/projects', {
+    const response = await fetch('https://api.cloud.llamaindex.ai/api/v1/projects/current', {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
@@ -16,7 +16,12 @@ export async function POST(request: Request) {
     });
 
     if (response.status === 200) {
-      return NextResponse.json({ keyStatus: 'valid' });
+      const data = await response.json();
+      return NextResponse.json({ 
+        keyStatus: 'valid',
+        project_id: data.id,
+        organization_id: data.organization_id
+      });
     }
     
     return NextResponse.json({ keyStatus: 'invalid' }, { status: 401 });
