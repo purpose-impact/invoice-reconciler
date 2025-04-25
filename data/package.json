@@ -1,0 +1,12 @@
+{
+  "name": "markdown-to-pdf",
+  "version": "1.0.0",
+  "description": "Convert markdown files to PDF",
+  "main": "convert.js",
+  "scripts": {
+    "convert": "node convert.js"
+  },
+  "dependencies": {
+    "markdown-pdf": "^11.0.0"
+  }
+} 
