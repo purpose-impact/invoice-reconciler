@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Login from '@/components/Login';
 import ContractUpload from '@/components/ContractUpload';
 import ContractsList from '@/components/ContractsList';
@@ -62,6 +63,18 @@ export default function Home() {
 
   return (
     <>
+      <div className="fixed left-0 top-0 h-screen w-64 bg-gray-50 p-4 flex flex-col items-center">
+        <div className="w-32 h-32 relative mb-4">
+          <Image
+            src="/logo.png"
+            alt="Invoice Reconciler Logo"
+            fill
+            className="object-contain"
+          />
+        </div>
+        <h1 className="text-2xl font-bold text-center">Invoice Reconciler</h1>
+      </div>
+
       {isLoggedIn ? (
         <>
           <div className="fixed top-4 right-4 z-10">
@@ -80,7 +93,7 @@ export default function Home() {
               </Alert>
             </div>
           )}
-          <div className="max-w-2xl mx-auto px-4 pt-4">
+          <div className="ml-64 max-w-2xl mx-auto px-4 pt-4">
             <InvoicesProvider>
               <ContractUpload className="mb-6" />
               <ContractsList />
@@ -88,7 +101,9 @@ export default function Home() {
           </div>
         </>
       ) : (
-        <Login onLoginSuccess={handleLogin} />
+        <div className="ml-64 flex items-center justify-center min-h-screen">
+          <Login onLoginSuccess={handleLogin} />
+        </div>
       )}
     </>
   );

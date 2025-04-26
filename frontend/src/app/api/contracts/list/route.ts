@@ -34,11 +34,11 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
-    
+
     // Transform the response into our expected format
     const contracts = data.map((doc: any) => ({
       id: doc.id,
-      friendlyName: null, // We'll set this up later
+      friendlyName: doc.metadata?.friendlyName || null,
       fileName: doc.metadata?.file_name || 'Unknown file'
     }));
 

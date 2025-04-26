@@ -5,6 +5,7 @@ import { useInvoices } from '@/context/InvoicesContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import InvoiceUpload from './InvoiceUpload';
+import ReconciledInvoicesList from './ReconciledInvoicesList';
 
 interface Contract {
   id: string;
@@ -25,6 +26,11 @@ export default function ContractsList() {
         const projectId = localStorage.getItem('project_id');
         const organizationId = localStorage.getItem('organization_id');
 
+        // Skip API call if any required ID is missing
+        if (!apiKey || !indexId || !projectId || !organizationId) {
+          return;
+        }
+
         const response = await fetch('/api/contracts/list', {
           headers: {
             'X-API-Key': apiKey || '',
@@ -37,6 +43,22 @@ export default function ContractsList() {
         if (response.ok) {
           const data = await response.json();
           setContracts(data);
+          
+          // Call setname endpoint for contracts with empty friendly names
+          data.forEach((contract: Contract) => {
+            if (!contract.friendlyName) {
+              fetch(`/api/contracts/setname?contract_id=${contract.id}`, {
+                headers: {
+                  'X-API-Key': localStorage.getItem('apiKey') || '',
+                  'X-Index-ID': localStorage.getItem('index_id') || '',
+                  'X-Project-ID': localStorage.getItem('project_id') || '',
+                  'X-Organization-ID': localStorage.getItem('organization_id') || '',
+                },
+              }).catch(err => {
+                console.error('Error setting contract name:', err);
+              });
+            }
+          });
         } else {
           setError('Failed to fetch contracts');
         }
@@ -77,15 +99,9 @@ export default function ContractsList() {
             {reconciledInvoices[contract.id] && (
               <div className="mt-4">
                 <h3 className="font-medium mb-2">Reconciled Invoices:</h3>
-                <div className="space-y-2">
-                  {reconciledInvoices[contract.id].map((invoice, index) => (
-                    <div key={index} className="p-2 bg-gray-50 rounded">
-                      <pre className="text-sm">
-                        {JSON.stringify(invoice.invoice_data, null, 2)}
-                      </pre>
-                    </div>
-                  ))}
-                </div>
+                <ReconciledInvoicesList 
+                  invoices={reconciledInvoices[contract.id].map(invoice => invoice.invoice_data)} 
+                />
               </div>
             )}
           </CardContent>

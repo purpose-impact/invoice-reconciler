@@ -135,6 +135,8 @@ export async function GET(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    console.log("Retriever data:", JSON.stringify(retrieverData, null, 2));
     
     // Extract document ID from the first node
     const firstNode = retrieverData.nodes[0];
@@ -194,15 +196,17 @@ export async function GET(request: NextRequest) {
             <invoice>
                 ${markdown}
             </invoice>
-            Your output should be a JSON object with the following fields:
+            Your output should be a JSON object with the following fields:            
             - status: "success" or "failure". To succeed, the invoice should 
             have a set of line items that match the terms of the contract in 
-            terms of item names, price, and quantities. If there is a problem 
-            with the invoice, you should return "failure" and an additional key:
+            terms of item names, price, and quantities.
+            - If the invoice is successful, also include total_due.
+            - No matter what, include due_date: in the format YYYY-MM-DD.
+
+            If there is a problem with the invoice, you should return "failure" 
+            and an additional key:
             - errors: an array of strings describing problems with the invoice. 
             Each error should be a very short description of a single problem.
-            If the invoice is successful, you should also return "due_date",
-            and total due.
 
             Return ONLY JSON, with no preamble or postamble and no other text. 
             Do not include markdown formatting of any kind.
@@ -213,6 +217,21 @@ export async function GET(request: NextRequest) {
     
     // Add documentId to the reconciliation result
     reconciliationResult.contractId = documentId;
+
+    // Come up with a friendly name for the contract
+    const friendlyNameResponse = await llm.complete({
+        prompt: `Come up with a very brief name for this invoice,
+        in the format "Invoice <invoice ID> <name of billing company>"
+        where <invoice ID> is some identifier for the invoice, and <name of billing company>
+        is the name of the billing company.
+        Here's the contract:
+        <contract>${contractText}</contract>
+        Return ONLY the name as a string, with no other text. Don't use Markdown.
+        `
+    })
+
+    const friendlyName = friendlyNameResponse.text.trim();
+    reconciliationResult.friendlyName = friendlyName;
 
     // Return success response with the enhanced reconciliation result
     return NextResponse.json(reconciliationResult);
