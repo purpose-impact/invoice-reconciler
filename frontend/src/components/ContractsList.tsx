@@ -1,81 +1,88 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useInvoices } from '@/context/InvoicesContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import InvoiceUpload from './InvoiceUpload';
 
 interface Contract {
   id: string;
-  friendlyName: string | null;
-  fileName: string;
+  name: string;
+  // Add other contract properties as needed
 }
 
 export default function ContractsList() {
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [error, setError] = useState('');
+  const { reconciledInvoices } = useInvoices();
 
   useEffect(() => {
     const fetchContracts = async () => {
       try {
         const apiKey = localStorage.getItem('apiKey');
-        const organizationId = localStorage.getItem('organization_id');
-        const projectId = localStorage.getItem('project_id');
         const indexId = localStorage.getItem('index_id');
+        const projectId = localStorage.getItem('project_id');
+        const organizationId = localStorage.getItem('organization_id');
 
         const response = await fetch('/api/contracts/list', {
           headers: {
             'X-API-Key': apiKey || '',
-            'X-Organization-Id': organizationId || '',
-            'X-Project-Id': projectId || '',
-            'X-Index-Id': indexId || '',
+            'X-Index-ID': indexId || '',
+            'X-Project-ID': projectId || '',
+            'X-Organization-ID': organizationId || '',
           },
         });
+
         if (response.ok) {
           const data = await response.json();
           setContracts(data);
+        } else {
+          setError('Failed to fetch contracts');
         }
       } catch (err) {
-        console.error('Error fetching contracts:', err);
+        setError('Error fetching contracts');
       }
     };
 
-    // Initial fetch
     fetchContracts();
-
-    // Set up polling every 5 seconds
-    const interval = setInterval(fetchContracts, 5000);
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(interval);
   }, []);
 
+  console.log("reconciledInvoices", reconciledInvoices);
+
   return (
-    <>
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle>Contracts</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {contracts.length === 0 ? (
-            <p className="text-gray-500">No contracts found</p>
-          ) : (
-            <ul className="space-y-2">
-              {contracts.map((contract, index) => (
-                <li 
-                  key={index} 
-                  className="flex justify-between items-center p-2 border rounded"
-                  data-document-id={contract.id}
-                >
-                  <span className="font-medium">
-                    {contract.friendlyName || 'Unnamed Contract'}
-                  </span>
-                  <span className="text-sm text-gray-500">{contract.fileName}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+    <div className="space-y-4">
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
+      {contracts.map(contract => (
+        <Card key={contract.id}>
+          <CardHeader>
+            <CardTitle>{contract.name}</CardTitle>
+            <CardDescription>Contract ID: {contract.id}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {reconciledInvoices[contract.id] && (
+              <div className="mt-4">
+                <h3 className="font-medium mb-2">Reconciled Invoices:</h3>
+                <div className="space-y-2">
+                  {reconciledInvoices[contract.id].map((invoice, index) => (
+                    <div key={index} className="p-2 bg-gray-50 rounded">
+                      <pre className="text-sm">
+                        {JSON.stringify(invoice.invoice_data, null, 2)}
+                      </pre>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ))}
       <InvoiceUpload />
-    </>
+    </div>
   );
 } 

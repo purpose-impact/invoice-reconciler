@@ -212,7 +212,7 @@ export async function GET(request: NextRequest) {
     const reconciliationResult = JSON.parse(llmResponse.text);
     
     // Add documentId to the reconciliation result
-    reconciliationResult.documentId = documentId;
+    reconciliationResult.contractId = documentId;
 
     // Return success response with the enhanced reconciliation result
     return NextResponse.json(reconciliationResult);

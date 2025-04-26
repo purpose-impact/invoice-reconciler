@@ -6,6 +6,7 @@ import ContractUpload from '@/components/ContractUpload';
 import ContractsList from '@/components/ContractsList';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { InvoicesProvider } from '@/context/InvoicesContext';
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -80,8 +81,10 @@ export default function Home() {
             </div>
           )}
           <div className="max-w-2xl mx-auto px-4 pt-4">
-            <ContractUpload />
-            <ContractsList />
+            <InvoicesProvider>
+              <ContractUpload />
+              <ContractsList />
+            </InvoicesProvider>
           </div>
         </>
       ) : (

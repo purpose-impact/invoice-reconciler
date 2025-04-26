@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { useInvoices } from '@/context/InvoicesContext';
 
 interface UploadedFile {
   fileName: string;
@@ -14,6 +15,7 @@ interface UploadedFile {
 }
 
 export default function InvoiceUpload() {
+  const { addReconciledInvoice } = useInvoices();
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -129,7 +131,7 @@ export default function InvoiceUpload() {
     );
 
     try {
-      await fetch(`/api/invoices/reconcile?job_id=${jobId}`, {
+      const response = await fetch(`/api/invoices/reconcile?job_id=${jobId}`, {
         method: 'GET',
         headers: {
           'X-API-Key': apiKey,
@@ -139,8 +141,12 @@ export default function InvoiceUpload() {
         }
       });
       
-      // We don't update the status here as this is just initiating the process
-      // You might want to add another polling mechanism to check reconciliation status
+      if (response.ok) {
+        const data = await response.json();
+        // Add the reconciled invoice data to the context
+        addReconciledInvoice(data.contractId, data);
+        console.log(`Reconciled invoice added for contract ${data.contractId}`);
+      }
     } catch (err) {
       console.error(`Error starting reconciliation for job ${jobId}:`, err);
       // Optionally mark reconciliation as failed
