@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
     
     // Transform the response into our expected format
     const contracts = data.map((doc: any) => ({
+      id: doc.id,
       friendlyName: null, // We'll set this up later
       fileName: doc.metadata?.file_name || 'Unknown file'
     }));

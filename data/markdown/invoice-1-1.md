@@ -20,9 +20,8 @@ San Francisco, CA 94110
 - 4 × Pastry Flour (50 lb) @ $38.95 = $155.80
 
 **SUBTOTAL:** $1,005.30
-**DISCOUNT (3%):** -$30.16
-**SHIPPING:** $45.00
-**TOTAL DUE:** $1,020.14
+**DISCOUNT (5%):** -$50.27
+**TOTAL DUE:** $955.03
 
 Please make checks payable to Premium Flour Mills, Inc.
 For questions concerning this invoice, contact accounting@premiumflour.com or call (415) 555-1234.
