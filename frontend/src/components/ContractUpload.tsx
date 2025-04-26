@@ -4,12 +4,16 @@ import { useState, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
-export default function ContractUpload() {
+export default function ContractUpload({ className }: { className?: string }) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -75,75 +79,81 @@ export default function ContractUpload() {
   };
 
   return (
-    <Card className="w-full max-w-3xl">
-      <CardHeader>
-        <CardTitle>Upload Contracts</CardTitle>
-        <CardDescription>
-          Drag and drop or select files to upload
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div 
-            className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-50 transition-colors"
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDrop}
-            onClick={() => document.getElementById('fileInput')?.click()}
-          >
-            <div className="space-y-1">
-              <p>Drag and drop files here, or click to select</p>
-              <p className="text-sm text-gray-500">Upload multiple contract files</p>
-            </div>
-            <input
-              id="fileInput"
-              type="file"
-              multiple
-              className="hidden"
-              onChange={handleFileChange}
-            />
-          </div>
+    <Card className={cn("w-full max-w-3xl", className)}>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CardHeader className="pb-0">
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="w-full flex items-center gap-2 p-0 hover:bg-transparent">
+              {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              <CardTitle className="text-base">Upload Contracts</CardTitle>
+            </Button>
+          </CollapsibleTrigger>
+        </CardHeader>
+        <CollapsibleContent>
+          <CardContent className="pt-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div 
+                className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-50 transition-colors"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+                onClick={() => document.getElementById('fileInput')?.click()}
+              >
+                <div className="space-y-1">
+                  <p>Drag and drop files here, or click to select</p>
+                  <p className="text-sm text-gray-500">Upload multiple contract files</p>
+                </div>
+                <input
+                  id="fileInput"
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+              </div>
 
-          {files.length > 0 && (
-            <div className="space-y-2">
-              <p className="font-medium">Selected files:</p>
-              <ul className="space-y-1">
-                {files.map((file, index) => (
-                  <li key={index} className="flex items-center justify-between bg-gray-100 p-2 rounded">
-                    <span className="truncate max-w-[80%]">{file.name}</span>
-                    <button 
-                      type="button" 
-                      onClick={() => removeFile(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      Remove
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+              {files.length > 0 && (
+                <div className="space-y-2">
+                  <p className="font-medium">Selected files:</p>
+                  <ul className="space-y-1">
+                    {files.map((file, index) => (
+                      <li key={index} className="flex items-center justify-between bg-gray-100 p-2 rounded">
+                        <span className="truncate max-w-[80%]">{file.name}</span>
+                        <button 
+                          type="button" 
+                          onClick={() => removeFile(index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
 
-          {success && (
-            <Alert>
-              <AlertDescription>{success}</AlertDescription>
-            </Alert>
-          )}
+              {success && (
+                <Alert>
+                  <AlertDescription>{success}</AlertDescription>
+                </Alert>
+              )}
 
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={files.length === 0 || uploading}
-          >
-            {uploading ? 'Uploading...' : 'Upload Files'}
-          </Button>
-        </form>
-      </CardContent>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={files.length === 0 || uploading}
+              >
+                {uploading ? 'Uploading...' : 'Upload Files'}
+              </Button>
+            </form>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 } 

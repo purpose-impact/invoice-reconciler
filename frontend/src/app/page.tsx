@@ -82,7 +82,7 @@ export default function Home() {
           )}
           <div className="max-w-2xl mx-auto px-4 pt-4">
             <InvoicesProvider>
-              <ContractUpload />
+              <ContractUpload className="mb-6" />
               <ContractsList />
             </InvoicesProvider>
           </div>

@@ -146,6 +146,13 @@ export default function InvoiceUpload() {
         // Add the reconciled invoice data to the context
         addReconciledInvoice(data.contractId, data);
         console.log(`Reconciled invoice added for contract ${data.contractId}`);
+        
+        // Update the file status to show reconciliation is complete
+        setUploadedFiles(prev => 
+          prev.map(f => 
+            f.job_id === jobId ? { ...f, reconciling: false } : f
+          )
+        );
       }
     } catch (err) {
       console.error(`Error starting reconciliation for job ${jobId}:`, err);
@@ -329,13 +336,18 @@ export default function InvoiceUpload() {
                           <StatusIcon status={file.status} />
                         </td>
                         <td className="p-2 px-3 border text-center">
-                          {file.reconciling && (
+                          {file.reconciling ? (
                             <div className="flex items-center justify-center">
                               <span className="mr-2">🔄</span>
                               <span>reconciling...</span>
                               <Loader2 className="ml-2 animate-spin h-4 w-4" />
                             </div>
-                          )}
+                          ) : file.status === 'success' ? (
+                            <div className="flex items-center justify-center">
+                              <span className="mr-2">✅</span>
+                              <span>Reconciled</span>
+                            </div>
+                          ) : null}
                         </td>
                       </tr>
                     ))}

@@ -8,8 +8,8 @@ import InvoiceUpload from './InvoiceUpload';
 
 interface Contract {
   id: string;
-  name: string;
-  // Add other contract properties as needed
+  friendlyName: string | null;
+  fileName: string;
 }
 
 export default function ContractsList() {
@@ -45,7 +45,14 @@ export default function ContractsList() {
       }
     };
 
+    // Initial fetch
     fetchContracts();
+
+    // Set up polling
+    const intervalId = setInterval(fetchContracts, 5000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   console.log("reconciledInvoices", reconciledInvoices);
@@ -61,8 +68,10 @@ export default function ContractsList() {
       {contracts.map(contract => (
         <Card key={contract.id}>
           <CardHeader>
-            <CardTitle>{contract.name}</CardTitle>
-            <CardDescription>Contract ID: {contract.id}</CardDescription>
+            <div className="flex justify-between items-center">
+              <CardTitle>{contract.friendlyName || "Unnamed contract"}</CardTitle>
+              <CardDescription className="text-right">{contract.fileName}</CardDescription>
+            </div>
           </CardHeader>
           <CardContent>
             {reconciledInvoices[contract.id] && (
