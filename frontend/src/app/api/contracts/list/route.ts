@@ -39,7 +39,8 @@ export async function GET(request: NextRequest) {
     const contracts = data.map((doc: any) => ({
       id: doc.id,
       friendlyName: doc.metadata?.friendlyName || null,
-      fileName: doc.metadata?.file_name || 'Unknown file'
+      fileName: doc.metadata?.file_name || 'Unknown file',
+      markdown: doc.text
     }));
 
     return NextResponse.json(contracts);

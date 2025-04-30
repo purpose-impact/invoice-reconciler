@@ -4,18 +4,25 @@ import { useState, useEffect } from 'react';
 import { useInvoices } from '@/context/InvoicesContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import InvoiceUpload from './InvoiceUpload';
 import ReconciledInvoicesList from './ReconciledInvoicesList';
+import { Button } from "@/components/ui/button";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Contract {
   id: string;
   friendlyName: string | null;
   fileName: string;
+  markdown: string;
 }
 
 export default function ContractsList() {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [error, setError] = useState('');
+  const [openContractId, setOpenContractId] = useState<string | null>(null);
   const { reconciledInvoices } = useInvoices();
 
   useEffect(() => {
@@ -88,14 +95,27 @@ export default function ContractsList() {
       )}
       
       {contracts.map(contract => (
-        <Card key={contract.id}>
-          <CardHeader>
+        <Card key={contract.id} className="space-y-0">
+          <CardHeader className="pb-0">
             <div className="flex justify-between items-center">
-              <CardTitle>{contract.friendlyName || "Unnamed contract"}</CardTitle>
-              <CardDescription className="text-right">{contract.fileName}</CardDescription>
+              <CardTitle className="text-lg">{contract.friendlyName || "Unnamed contract"}</CardTitle>
+              <CardDescription className="text-right text-sm">{contract.fileName}</CardDescription>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
+            <Collapsible open={openContractId === contract.id} onOpenChange={(isOpen) => setOpenContractId(isOpen ? contract.id : null)}>
+              <CollapsibleTrigger asChild className="-mt-8">
+                <Button variant="ghost" className="w-fit flex items-center gap-1 p-0 hover:bg-transparent text-xs text-gray-500 -ml-4">
+                  {openContractId === contract.id ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                  <span>Show contract</span>
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{contract.markdown}</ReactMarkdown>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
             {reconciledInvoices[contract.id] && (
               <div className="mt-4">
                 <h3 className="font-medium mb-2">Reconciled Invoices:</h3>

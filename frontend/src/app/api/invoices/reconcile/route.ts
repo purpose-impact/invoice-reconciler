@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch the parsed document from LlamaIndex API
+    // Fetch the parsed document from LlamaParse API
     console.log(`Fetching parsed document for job: ${jobId}`);
     
     const llamaIndexApiUrl = `https://api.cloud.llamaindex.ai/api/v1/parsing/job/${jobId}/result/markdown`;
@@ -90,18 +90,28 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Successfully retrieved parsed document');
+
+    // extract just the company name from the markdown
+    const nameResponse = await llm.complete({
+        prompt: `Extract the company name from the following markdown: ${markdown}
+          Return ONLY the name of the company as a string, with no other text.
+          Don't use markdown.`
+    })
+
+    const companyName = nameResponse.text.trim();
+    console.log('Successfully extracted company name:', companyName);
     
     // Call the retriever API to get matching document
-    console.log('Calling retriever API to find matching document');
+    console.log('Calling retriever API to find a contract that matches this company name');
     
     const retrieverApiUrl = `https://api.cloud.llamaindex.ai/api/v1/retrievers/retrieve?project_id=${projectId}&organization_id=${organizationId}`;
     
     const retrieverPayload = {
       mode: "full",
-      query: markdown,
+      query: companyName,
       pipelines: [
         {
-          name: "Invoice Matching Pipeline",
+          name: "Contract Matching Pipeline",
           description: "Find matching contract for invoice reconciliation",
           pipeline_id: indexId
         }
@@ -136,7 +146,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log("Retriever data:", JSON.stringify(retrieverData, null, 2));
+    //console.log("Retriever data:", JSON.stringify(retrieverData, null, 2));
     
     // Extract document ID from the first node
     const firstNode = retrieverData.nodes[0];
@@ -218,6 +228,9 @@ export async function GET(request: NextRequest) {
     // Add documentId to the reconciliation result
     reconciliationResult.contractId = documentId;
 
+    // add the markdown to the reconciliation result
+    reconciliationResult.markdown = markdown;
+
     // Come up with a friendly name for the contract
     const friendlyNameResponse = await llm.complete({
         prompt: `Come up with a very brief name for this invoice,
@@ -232,6 +245,8 @@ export async function GET(request: NextRequest) {
 
     const friendlyName = friendlyNameResponse.text.trim();
     reconciliationResult.friendlyName = friendlyName;
+
+    console.log("Reconciliation result:", JSON.stringify(reconciliationResult, null, 2));
 
     // Return success response with the enhanced reconciliation result
     return NextResponse.json(reconciliationResult);
