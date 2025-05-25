@@ -3,6 +3,7 @@ const path = require('path');
 const markdownpdf = require('markdown-pdf');
 
 // Create directories if they don't exist
+//HELLO WORLD
 const markdownDir = './markdown';
 const pdfDir = './pdf';
 
@@ -29,9 +30,9 @@ if (markdownFiles.length === 0) {
 markdownFiles.forEach(file => {
     const inputPath = path.join(markdownDir, file);
     const outputPath = path.join(pdfDir, file.replace('.md', '.pdf'));
-    
+
     console.log(`Converting ${file} to PDF...`);
-    
+
     markdownpdf()
         .from(inputPath)
         .to(outputPath, () => {
